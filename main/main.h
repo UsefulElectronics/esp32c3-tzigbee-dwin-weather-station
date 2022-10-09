@@ -19,11 +19,13 @@
 #include <string.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "freertos/queue.h"
 #include "esp_system.h"
 
 #include "nvs_flash.h"
 
 #include "http_request.h"
+#include "cJSON.h"
 /* MACROS --------------------------------------------------------------------*/
 
 /* ENUMORATIONS --------------------------------------------------------------*/

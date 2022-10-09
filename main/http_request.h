@@ -18,6 +18,7 @@
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "freertos/queue.h"
 
 #include "esp_wifi.h"
 #include "esp_event.h"
@@ -29,20 +30,25 @@
 #include "lwip/netdb.h"
 #include "lwip/dns.h"
 
+#include "esp_http_client.h"
+#include "esp_crt_bundle.h"
+
+#include "privet_api.h"
 #include "protocol_examples_common.h"
 /* MACROS --------------------------------------------------------------------*/
+#define HTTP_RESPONSE_LENGTH_MAX		1024
 
-/* Constants that aren't configurable in menuconfig */
-#define WEB_SERVER "worldtimeapi.org"
-#define WEB_PORT "80"
-#define WEB_PATH "/api/timezone/Europe/Istanbul"
 
 /* ENUMORATIONS --------------------------------------------------------------*/
 
 /* STRUCTURES & TYPEDEFS -----------------------------------------------------*/
-
+typedef struct
+{
+	uint8_t packetSize;
+	char packetBuffer[HTTP_RESPONSE_LENGTH_MAX];
+}hHttpPort_t;
 /* VARIABLES -----------------------------------------------------------------*/
-
+extern QueueHandle_t httpRx_queue;
 /* FUNCTIONS DECLARATION -----------------------------------------------------*/
 void http_get_task			(void *pvParameters);
 

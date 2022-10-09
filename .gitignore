@@ -1,3 +1,4 @@
 sdkconfig.ci
 sdkconfig.old
 sdkconfig
+main/privet_api.h
