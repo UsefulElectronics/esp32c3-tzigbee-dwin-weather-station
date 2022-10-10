@@ -52,6 +52,8 @@ extern QueueHandle_t httpRx_queue;
 /* FUNCTIONS DECLARATION -----------------------------------------------------*/
 void http_get_task			(void *pvParameters);
 
+
+
 void wifiInit_ssdConnect	(void);
 
 #endif /* MAIN_HTTP_REQUEST_H_ */

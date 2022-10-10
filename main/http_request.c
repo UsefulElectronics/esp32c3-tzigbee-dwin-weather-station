@@ -32,103 +32,106 @@ hHttpPort_t hHttpResponse;
 /* MACROS --------------------------------------------------------------------*/
 
 /* PRIVATE FUNCTIONS DECLARATION ---------------------------------------------*/
-static void _http_event_handler(esp_http_client_event_t *evt);
+static void http_event_handler	(esp_http_client_event_t *evt);
+static void httpClientInit		(void);
 /* FUNCTION PROTOTYPES -------------------------------------------------------*/
 void http_get_task(void *pvParameters)
 {
-    const struct addrinfo hints = {
-        .ai_family = AF_INET,
-        .ai_socktype = SOCK_STREAM,
-    };
-    struct addrinfo *res;
-    struct in_addr *addr;
-//    int s, r;
-    int socketId = 0;
-    hHttpPort_t hHttpResponse;
-    memset(&hHttpResponse, 0, sizeof(hHttpPort_t));
-//    char recv_buf[HTTP_RESPONSE_LENGTH_MAX];
-    //HTTP response data queue FIFO
-    httpRx_queue = xQueueCreate(5, HTTP_RESPONSE_LENGTH_MAX);
+//    const struct addrinfo hints = {
+//        .ai_family = AF_INET,
+//        .ai_socktype = SOCK_STREAM,
+//    };
+//    struct addrinfo *res;
+//    struct in_addr *addr;
+////    int s, r;
+//    int socketId = 0;
+//    hHttpPort_t hHttpResponse;
+//    memset(&hHttpResponse, 0, sizeof(hHttpPort_t));
+////    char recv_buf[HTTP_RESPONSE_LENGTH_MAX];
+//    //HTTP response data queue FIFO
+//    httpRx_queue = xQueueCreate(5, HTTP_RESPONSE_LENGTH_MAX);
 
     while(1)
     {
-        int err = getaddrinfo(WEB_SERVER, WEB_PORT, &hints, &res);
+    	httpClientInit();
 
-        if(err != 0 || res == NULL) {
-            ESP_LOGE(TAG, "DNS lookup failed err=%d res=%p", err, res);
-            vTaskDelay(1000 / portTICK_PERIOD_MS);
-            continue;
-        }
-
-        /* Code to print the resolved IP.
-
-           Note: inet_ntoa is non-reentrant, look at ipaddr_ntoa_r for "real" code */
-        addr = &((struct sockaddr_in *)res->ai_addr)->sin_addr;
-        ESP_LOGI(TAG, "DNS lookup succeeded. IP=%s", inet_ntoa(*addr));
-
-        socketId = socket(res->ai_family, res->ai_socktype, 0);
-        if(socketId < 0) {
-            ESP_LOGE(TAG, "... Failed to allocate socket.");
-            freeaddrinfo(res);
-            vTaskDelay(1000 / portTICK_PERIOD_MS);
-            continue;
-        }
-        ESP_LOGI(TAG, "... allocated socket");
-
-        if(connect(socketId, res->ai_addr, res->ai_addrlen) != 0) {
-            ESP_LOGE(TAG, "... socket connect failed errno=%d", errno);
-            close(socketId);
-            freeaddrinfo(res);
-            vTaskDelay(4000 / portTICK_PERIOD_MS);
-            continue;
-        }
-
-        ESP_LOGI(TAG, "... connected");
-        freeaddrinfo(res);
-
-        if (write(socketId, REQUEST, strlen(REQUEST)) < 0) {
-            ESP_LOGE(TAG, "... socket send failed");
-            close(socketId);
-            vTaskDelay(4000 / portTICK_PERIOD_MS);
-            continue;
-        }
-        ESP_LOGI(TAG, "... socket send success");
-
-        struct timeval receiving_timeout;
-        receiving_timeout.tv_sec = 5;
-        receiving_timeout.tv_usec = 0;
-        if (setsockopt(socketId, SOL_SOCKET, SO_RCVTIMEO, &receiving_timeout,
-                sizeof(receiving_timeout)) < 0) {
-            ESP_LOGE(TAG, "... failed to set socket receiving timeout");
-            close(socketId);
-            vTaskDelay(4000 / portTICK_PERIOD_MS);
-            continue;
-        }
-        ESP_LOGI(TAG, "... set socket receiving timeout success");
-
-        /* Read HTTP response */
-        do
-        {
-        	//Clear HTTP response buffer
-            bzero(hHttpResponse.packetBuffer, HTTP_RESPONSE_LENGTH_MAX);
-            //Read data received HTTP response and place it in the handler buffer
-            hHttpResponse.packetSize = read(socketId, hHttpResponse.packetBuffer, HTTP_RESPONSE_LENGTH_MAX - 1);
-            //place data in the queue only if there is data in the http buffer
-            if(hHttpResponse.packetSize)
-            {
-            	//Data obtained from socket read will be placed in the queue so it is accessed from the main layer
-            	xQueueSendToBack(httpRx_queue, &hHttpResponse, portMAX_DELAY);
-            }
-
-
-//            for(int i = 0; i < r; i++)
+//        int err = getaddrinfo(WEB_SERVER, WEB_PORT, &hints, &res);
+//
+//        if(err != 0 || res == NULL) {
+//            ESP_LOGE(TAG, "DNS lookup failed err=%d res=%p", err, res);
+//            vTaskDelay(1000 / portTICK_PERIOD_MS);
+//            continue;
+//        }
+//
+//        /* Code to print the resolved IP.
+//
+//           Note: inet_ntoa is non-reentrant, look at ipaddr_ntoa_r for "real" code */
+//        addr = &((struct sockaddr_in *)res->ai_addr)->sin_addr;
+//        ESP_LOGI(TAG, "DNS lookup succeeded. IP=%s", inet_ntoa(*addr));
+//
+//        socketId = socket(res->ai_family, res->ai_socktype, 0);
+//        if(socketId < 0) {
+//            ESP_LOGE(TAG, "... Failed to allocate socket.");
+//            freeaddrinfo(res);
+//            vTaskDelay(1000 / portTICK_PERIOD_MS);
+//            continue;
+//        }
+//        ESP_LOGI(TAG, "... allocated socket");
+//
+//        if(connect(socketId, res->ai_addr, res->ai_addrlen) != 0) {
+//            ESP_LOGE(TAG, "... socket connect failed errno=%d", errno);
+//            close(socketId);
+//            freeaddrinfo(res);
+//            vTaskDelay(4000 / portTICK_PERIOD_MS);
+//            continue;
+//        }
+//
+//        ESP_LOGI(TAG, "... connected");
+//        freeaddrinfo(res);
+//
+//        if (write(socketId, REQUEST, strlen(REQUEST)) < 0) {
+//            ESP_LOGE(TAG, "... socket send failed");
+//            close(socketId);
+//            vTaskDelay(4000 / portTICK_PERIOD_MS);
+//            continue;
+//        }
+//        ESP_LOGI(TAG, "... socket send success");
+//
+//        struct timeval receiving_timeout;
+//        receiving_timeout.tv_sec = 5;
+//        receiving_timeout.tv_usec = 0;
+//        if (setsockopt(socketId, SOL_SOCKET, SO_RCVTIMEO, &receiving_timeout,
+//                sizeof(receiving_timeout)) < 0) {
+//            ESP_LOGE(TAG, "... failed to set socket receiving timeout");
+//            close(socketId);
+//            vTaskDelay(4000 / portTICK_PERIOD_MS);
+//            continue;
+//        }
+//        ESP_LOGI(TAG, "... set socket receiving timeout success");
+//
+//        /* Read HTTP response */
+//        do
+//        {
+//        	//Clear HTTP response buffer
+//            bzero(hHttpResponse.packetBuffer, HTTP_RESPONSE_LENGTH_MAX);
+//            //Read data received HTTP response and place it in the handler buffer
+//            hHttpResponse.packetSize = read(socketId, hHttpResponse.packetBuffer, HTTP_RESPONSE_LENGTH_MAX - 1);
+//            //place data in the queue only if there is data in the http buffer
+//            if(hHttpResponse.packetSize)
 //            {
-//                putchar(recv_buf[i]);
+//            	//Data obtained from socket read will be placed in the queue so it is accessed from the main layer
+//            	xQueueSendToBack(httpRx_queue, &hHttpResponse, portMAX_DELAY);
 //            }
-        } while( hHttpResponse.packetSize > 0);
-
-
-        close(socketId);
+//
+//
+////            for(int i = 0; i < r; i++)
+////            {
+////                putchar(recv_buf[i]);
+////            }
+//        } while( hHttpResponse.packetSize > 0);
+//
+//
+//        close(socketId);
         vTaskDelay(61000 / portTICK_PERIOD_MS);
 
     }
@@ -139,34 +142,26 @@ static void http_event_handler(esp_http_client_event_t *evt)
 	switch (evt->event_id)
 	{
 		case HTTP_EVENT_ON_DATA:
-
-//		    int content_length =  esp_http_client_fetch_headers(evt->client);
-//		    int total_read_len = 0, read_len;
-		    hHttpResponse.packetSize = evt->data_len;
-
-//		    esp_http_client_close(evt->client);
-//		    hHttpResponse.packetBuffer
-//		    xQueueSendToBack(httpRx_queue, &hHttpResponse, portMAX_DELAY);
-
-
-			ESP_LOGI(TAG, "rx size:%d /n rx Content: ", evt->data_len);
-
-			for(int i = 0; i < evt->data_len; i++)
-			{
-				putchar(hHttpResponse.packetBuffer[i]);
-			}
-
-//
-//		    xQueueSendToBack(httpRx_queue, &hHttpResponse, portMAX_DELAY);
-
+			//Accumulate Json string in the response buffer
+		    memcpy(hHttpResponse.packetBuffer + hHttpResponse.packetSize, evt->data, evt->data_len);
+		    //Response cursor move forward
+		    hHttpResponse.packetSize += evt->data_len;
 
 			break;
         case HTTP_EVENT_ON_CONNECTED:
+
             ESP_LOGD(TAG, "HTTP_EVENT_ON_CONNECTED");
+
             break;
 
         case HTTP_EVENT_DISCONNECTED:
+
             ESP_LOGI(TAG, "HTTP_EVENT_DISCONNECTED");
+
+            hHttpResponse.packetSize = strlen(hHttpResponse.packetBuffer);
+
+            xQueueSendToBack(httpRx_queue, &hHttpResponse, portMAX_DELAY);
+
             break;
 
 		default:
@@ -176,25 +171,21 @@ static void http_event_handler(esp_http_client_event_t *evt)
 
 void httpClientInit(void)
 {
-	 esp_http_client_config_t config =
-	 {
-//	        .host 			= WEB_SERVER,
-//	        .path 			= WEB_PATH,
-			.url			= OPEN_WEATHER_URL,
-			.port 			= 80,
-//	        .query 			= "esp",
-	        .event_handler	= (http_event_handle_cb*) http_event_handler,
-	        .user_data		= hHttpResponse.packetBuffer,        // Pass address of local buffer to get response
-			.method 		= HTTP_METHOD_GET,
-			 .disable_auto_redirect = true,
-			 .crt_bundle_attach = esp_crt_bundle_attach,
 
-	    };
-	    esp_http_client_handle_t client = esp_http_client_init(&config);
+    esp_http_client_config_t config_get =
+    {
+        .url = OPEN_WEATHER_URL,
+        .method = HTTP_METHOD_GET,
+        .cert_pem = NULL,
+        .event_handler = http_event_handler
+    };
 
-	    esp_http_client_perform(client);
+    esp_http_client_handle_t client = esp_http_client_init(&config_get);
+    //Perform HTTP request
+    esp_http_client_perform(client);
+    //Close socket after getting a response to the GET request
+    esp_http_client_cleanup(client);
 
-	    esp_http_client_read_response(client, hHttpResponse.packetBuffer,  HTTP_RESPONSE_LENGTH_MAX);
 
 }
 
@@ -212,7 +203,6 @@ void wifiInit_ssdConnect(void)
      */
     ESP_ERROR_CHECK(example_connect());
 
-    httpClientInit();
 }
 
 /**************************  Useful Electronics  ****************END OF FILE***/

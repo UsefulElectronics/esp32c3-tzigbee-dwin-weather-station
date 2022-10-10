@@ -37,10 +37,15 @@ void http_json_parser(void *pvParameters)
 		if(xQueueReceive(httpRx_queue, (void * )&hHttpResponse, (portTickType)portMAX_DELAY))
 		{
 			ESP_LOGI(TAG, "Packet size=%d JSON: %s.", hHttpResponse.packetSize, hHttpResponse.packetBuffer);
-			for(uint8_t i = 0; i < hHttpResponse.packetSize; ++i)
-			{
-				ESP_LOGI(TAG, "%d", hHttpResponse.packetBuffer[i]);
-			}
+
+		    const cJSON *name = NULL;
+
+		    int status = 0;
+
+		    cJSON *weatherJson = cJSON_Parse(hHttpResponse.packetBuffer);
+
+		    name = cJSON_GetObjectItemCaseSensitive(weatherJson, "name");
+
 		}
 	}
 }
@@ -52,7 +57,7 @@ void app_main(void)
 
 	wifiInit_ssdConnect();
 
-//    xTaskCreate(&http_get_task, "http_get_task", 4096, NULL, 5, NULL);
+    xTaskCreate(&http_get_task, "http_get_task", 4096, NULL, 5, NULL);
 //
     xTaskCreate(&http_json_parser, "http_get_task", 4096, NULL, 5, NULL);
 }
