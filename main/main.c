@@ -28,28 +28,6 @@
 static const char *TAG = "main";
 /* FUNCTIONS DECLARATION -----------------------------------------------------*/
 
-void http_json_parser(void *pvParameters)
-{
-	hHttpPort_t hHttpResponse;
-
-	while(1)
-	{
-		if(xQueueReceive(httpRx_queue, (void * )&hHttpResponse, (portTickType)portMAX_DELAY))
-		{
-			ESP_LOGI(TAG, "Packet size=%d JSON: %s.", hHttpResponse.packetSize, hHttpResponse.packetBuffer);
-
-		    const cJSON *name = NULL;
-
-		    int status = 0;
-
-		    cJSON *weatherJson = cJSON_Parse(hHttpResponse.packetBuffer);
-
-		    name = cJSON_GetObjectItemCaseSensitive(weatherJson, "name");
-
-		}
-	}
-}
-
 
 void app_main(void)
 {

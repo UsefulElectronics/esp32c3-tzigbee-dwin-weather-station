@@ -15,7 +15,15 @@
 
 
 /* INCLUDES ------------------------------------------------------------------*/
+#include <string.h>
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "freertos/queue.h"
+#include "esp_system.h"
 
+#include "unix_timestamp.h"
+#include "http_request.h"
+#include "cJSON.h"
 /* MACROS --------------------------------------------------------------------*/
 
 /* ENUMORATIONS --------------------------------------------------------------*/
@@ -25,7 +33,7 @@
 /* VARIABLES -----------------------------------------------------------------*/
 
 /* FUNCTIONS DECLARATION -----------------------------------------------------*/
-
+void http_json_parser(void *pvParameters);
 
 
 #endif /* MAIN_API_PARSER_H_ */

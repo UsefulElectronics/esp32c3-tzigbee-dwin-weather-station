@@ -25,7 +25,8 @@
 #include "nvs_flash.h"
 
 #include "http_request.h"
-#include "cJSON.h"
+#include "api_parser.h"
+
 /* MACROS --------------------------------------------------------------------*/
 
 /* ENUMORATIONS --------------------------------------------------------------*/
