@@ -29,7 +29,15 @@
 /* ENUMORATIONS --------------------------------------------------------------*/
 
 /* STRUCTURES & TYPEDEFS -----------------------------------------------------*/
+typedef struct
+{
+	char 	timeString	[5];
+	char 	dateString	[5];
+	char 	weatherDesc [30];
+	uint8_t tempreture	[2];
 
+
+}apiWeather_t;
 /* VARIABLES -----------------------------------------------------------------*/
 
 /* FUNCTIONS DECLARATION -----------------------------------------------------*/
