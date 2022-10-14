@@ -54,7 +54,8 @@ typedef struct
 	}uart_status;
 }uartHandler_t;
 /* VARIABLES -----------------------------------------------------------------*/
-extern SemaphoreHandle_t UART_RXsem;
+extern SemaphoreHandle_t 	UART_RXsem;
+extern QueueHandle_t 		uartTx_queue;
 /* FUNCTIONS DECLARATION -----------------------------------------------------*/
 void 	uartBufferInit			(void);
 uint8_t uartGetRxBuffer			(uint8_t* buffer);

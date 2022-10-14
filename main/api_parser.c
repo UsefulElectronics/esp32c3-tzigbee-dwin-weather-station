@@ -18,6 +18,8 @@
 
 /* VARIABLES -----------------------------------------------------------------*/
 static const char *TAG = "JSON";
+
+QueueHandle_t apiWeather_queue;
 /* DEFINITIONS ---------------------------------------------------------------*/
 
 /* MACROS --------------------------------------------------------------------*/
@@ -28,8 +30,14 @@ static void parsedTimeUpdate			(char* time, int min, int hour);
 static void parsedDateUpdate			(char* date, int day, int month, int year);
 
 static void parsedTempretureUpdate		(uint8_t* weatherTemp, float tempreture);
-/* FUNCTIONS DECLARATION -----------------------------------------------------*/
 
+static void parsedWeatherString			(char* weatherDesc, char* description);
+/* FUNCTIONS DECLARATION -----------------------------------------------------*/
+/**
+ * @brief
+ *
+ * @param pvParameters
+ */
 void http_json_parser(void *pvParameters)
 {
 	hHttpPort_t hHttpResponse;
@@ -37,6 +45,8 @@ void http_json_parser(void *pvParameters)
 	struct tm dateTime;
 
 	apiWeather_t WeatherParam;
+
+	apiWeather_queue = xQueueCreate(5, HTTP_RESPONSE_LENGTH_MAX);
 
 	while(1)
 	{
@@ -92,8 +102,12 @@ void http_json_parser(void *pvParameters)
 					ESP_LOGI(TAG, "Weather Desc: %s",jElement->valuestring);
 				}
 
-				time_unixStampToLocalTime(jElement->valueint, &dateTime);
+				parsedWeatherString(WeatherParam.weatherDesc, jElement->valuestring);
 
+
+
+				xQueueSendToBack(apiWeather_queue, (void *)&WeatherParam, portMAX_DELAY);
+				ESP_LOGI(TAG, "placed api buffer");
 
 		    }
 		}
@@ -122,9 +136,24 @@ static void parsedDateUpdate(char* date, int day, int month, int year)
 {
 	sprintf(date, "%02d.%02d.%04d",day, month, year);
 }
-
+/**
+ * @brief
+ *
+ * @param weatherTemp
+ * @param tempreture
+ */
 static void parsedTempretureUpdate(uint8_t* weatherTemp, float tempreture)
 {
 	weatherTemp[0] = (uint8_t) tempreture;
+}
+/**
+ * @brief
+ *
+ * @param weatherDesc
+ * @param description
+ */
+static void parsedWeatherString(char* weatherDesc, char* description)
+{
+	strcpy(weatherDesc, description);
 }
 /**************************  Useful Electronics  ****************END OF FILE***/

@@ -26,6 +26,8 @@
 
 #include "http_request.h"
 #include "api_parser.h"
+#include "dwin.h"
+#include "uart_config.h"
 
 /* MACROS --------------------------------------------------------------------*/
 

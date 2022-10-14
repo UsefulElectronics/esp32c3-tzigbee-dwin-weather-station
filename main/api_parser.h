@@ -25,6 +25,10 @@
 #include "http_request.h"
 #include "cJSON.h"
 /* MACROS --------------------------------------------------------------------*/
+#define TIME_STRING_SIZE		5
+#define DATE_STRING_SIZE		10
+#define TEMPRETURE_WORD_SIZE	5
+
 
 /* ENUMORATIONS --------------------------------------------------------------*/
 
@@ -39,7 +43,7 @@ typedef struct
 
 }apiWeather_t;
 /* VARIABLES -----------------------------------------------------------------*/
-
+extern QueueHandle_t apiWeather_queue;
 /* FUNCTIONS DECLARATION -----------------------------------------------------*/
 void http_json_parser(void *pvParameters);
 

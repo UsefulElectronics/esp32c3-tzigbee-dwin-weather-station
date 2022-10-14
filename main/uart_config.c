@@ -17,9 +17,9 @@
 /* PRIVATE STRUCTRES ---------------------------------------------------------*/
 
 /* VARIABLES -----------------------------------------------------------------*/
-static QueueHandle_t uartRx_queue;
-static QueueHandle_t uartTx_queue;
-SemaphoreHandle_t UART_RXsem 	  		= NULL;
+static QueueHandle_t 	uartRx_queue;
+QueueHandle_t 			uartTx_queue;
+SemaphoreHandle_t 		UART_RXsem 	= NULL;
 /* DEFINITIONS ---------------------------------------------------------------*/
 
 /* MACROS --------------------------------------------------------------------*/
@@ -93,9 +93,21 @@ void uart_config(void)
     uart_pattern_queue_reset(UART_AT_PORT, 100);
 
     uartBufferInit();
+
+    uartTx_queue = xQueueCreate(5, TX_BUF_SIZE);
 }
 
+void uart_transmission_task(void *pvParameters)
+{
 
+	while(1)
+	{
+		if(xQueueReceive(uartTx_queue, (void * )hUart.uart_txBuffer, (portTickType)portMAX_DELAY))
+		{
+
+		}
+	}
+}
 
 /**
  * @brief UART event task. Here UART RX callback takes place. This task should be started in the main
