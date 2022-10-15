@@ -22,16 +22,20 @@ static const char *TAG = "HTTP";
 QueueHandle_t httpRx_queue;
 
 hHttpPort_t hHttpResponse;
+
+
 /* DEFINITIONS ---------------------------------------------------------------*/
 
 /* MACROS --------------------------------------------------------------------*/
 
 /* PRIVATE FUNCTIONS DECLARATION ---------------------------------------------*/
-static void http_event_handler	(esp_http_client_event_t *evt);
+//static void http_event_handler	(esp_http_client_event_t *evt);
 static void httpClientInit		(void);
 /* FUNCTION PROTOTYPES -------------------------------------------------------*/
 void http_get_task(void *pvParameters)
 {
+
+	httpRx_queue = xQueueCreate(3, sizeof(hHttpPort_t));
     while(1)
     {
     	httpClientInit();
@@ -94,10 +98,12 @@ void httpClientInit(void)
 
 }
 
+
 void wifiInit_ssdConnect(void)
 {
 	//Create queue for transfaring data received over HTTP response to the main layer
-	httpRx_queue = xQueueCreate(5, HTTP_RESPONSE_LENGTH_MAX);
+
+
 
     ESP_ERROR_CHECK(esp_netif_init());
     ESP_ERROR_CHECK(esp_event_loop_create_default());
@@ -107,6 +113,7 @@ void wifiInit_ssdConnect(void)
      * examples/protocols/README.md for more information about this function.
      */
     ESP_ERROR_CHECK(example_connect());
+
 
 }
 

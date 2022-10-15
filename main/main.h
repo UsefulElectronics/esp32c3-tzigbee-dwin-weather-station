@@ -20,9 +20,11 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/queue.h"
+#include "esp_freertos_hooks.h"
 #include "esp_system.h"
 
 #include "nvs_flash.h"
+#include "unix_timestamp.h"
 
 #include "http_request.h"
 #include "api_parser.h"

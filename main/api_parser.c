@@ -20,6 +20,8 @@
 static const char *TAG = "JSON";
 
 QueueHandle_t apiWeather_queue;
+
+int prevTime = 0;
 /* DEFINITIONS ---------------------------------------------------------------*/
 
 /* MACROS --------------------------------------------------------------------*/
@@ -46,7 +48,7 @@ void http_json_parser(void *pvParameters)
 
 	apiWeather_t WeatherParam;
 
-	apiWeather_queue = xQueueCreate(5, HTTP_RESPONSE_LENGTH_MAX);
+	apiWeather_queue = xQueueCreate(5, sizeof(apiWeather_t));
 
 	while(1)
 	{
@@ -64,19 +66,20 @@ void http_json_parser(void *pvParameters)
 		    {
 			    jElement = cJSON_GetObjectItemCaseSensitive(ResponseJson, "dt");
 
-			    ESP_LOGI(TAG, "time: %d.", jElement->valueint);
+//			    ESP_LOGI(TAG, "time: %d.", jElement->valueint);
 
-
+			    prevTime = jElement->valueint;
 
 			    time_unixStampToLocalTime(jElement->valueint, &dateTime);
 
-			    printf( "\r\n%02d/%02d/%02d \x49 %02d:%02d:%02d\r\n",
-			    								dateTime.tm_mday,
-			    								dateTime.tm_mon + 1,		// see mktime, localtime functions
-			    								dateTime.tm_year + 1900,	// see mktime, localtime functions
-			    								dateTime.tm_hour,
-			    								dateTime.tm_min,
-			    								dateTime.tm_sec);
+			    dateTime.tm_mon += 1;
+			    dateTime.tm_year += 1900;
+			    dateTime.tm_hour += 3;
+			    if(dateTime.tm_hour >= 24)
+			    {
+			    	dateTime.tm_hour -= 24;
+			    }
+
 
 			    parsedTimeUpdate(WeatherParam.timeString, dateTime.tm_min, dateTime.tm_hour);
 
@@ -88,7 +91,7 @@ void http_json_parser(void *pvParameters)
 
 			    jElement->child = cJSON_GetObjectItemCaseSensitive(jElement, "temp");
 
-			    ESP_LOGI(TAG, "temp: %.02f", jElement->child->valuedouble);
+//			    ESP_LOGI(TAG, "temp: %.02f", jElement->child->valuedouble);
 
 			    parsedTempretureUpdate(WeatherParam.tempreture, jElement->child->valuedouble);
 
@@ -97,17 +100,16 @@ void http_json_parser(void *pvParameters)
 			    jElement = cJSON_GetObjectItemCaseSensitive(jWeatherArray->child, "description");
 
 
-				if(cJSON_IsString(jElement))
-				{
-					ESP_LOGI(TAG, "Weather Desc: %s",jElement->valuestring);
-				}
+//				if(cJSON_IsString(jElement))
+//				{
+//					ESP_LOGI(TAG, "Weather Desc: %s",jElement->valuestring);
+//				}
 
 				parsedWeatherString(WeatherParam.weatherDesc, jElement->valuestring);
 
 
 
 				xQueueSendToBack(apiWeather_queue, (void *)&WeatherParam, portMAX_DELAY);
-				ESP_LOGI(TAG, "placed api buffer");
 
 		    }
 		}
@@ -144,7 +146,8 @@ static void parsedDateUpdate(char* date, int day, int month, int year)
  */
 static void parsedTempretureUpdate(uint8_t* weatherTemp, float tempreture)
 {
-	weatherTemp[0] = (uint8_t) tempreture;
+	weatherTemp[0] = 0;
+	weatherTemp[1] = (uint8_t) floor(tempreture);
 }
 /**
  * @brief

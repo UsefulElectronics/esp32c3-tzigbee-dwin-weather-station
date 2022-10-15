@@ -24,14 +24,14 @@
 #include "driver/uart.h"
 #include "driver/gpio.h"
 /* MACROS --------------------------------------------------------------------*/
-#define TXD_PIN 			(GPIO_NUM_7)
-#define RXD_PIN 			(GPIO_NUM_8)
+#define TXD_PIN 			(GPIO_NUM_6)
+#define RXD_PIN 			(GPIO_NUM_7)
 
 #define UART_AT_PORT 		UART_NUM_1
 #define PATTERN_AT_COUNT    2
 
-#define RX_BUF_SIZE			1024
-#define TX_BUF_SIZE			1024
+#define RX_BUF_SIZE			100
+#define TX_BUF_SIZE			100
 
 
 /* ENUMORATIONS --------------------------------------------------------------*/
@@ -62,7 +62,10 @@ uint8_t uartGetRxBuffer			(uint8_t* buffer);
 uint8_t uartCheckPacketRxFlag	(void);
 void 	uartResetPacketRxFlag	(void);
 void 	uart_config				(void);
+
 void 	uart_event_task			(void *pvParameters);
+
+void 	uart_transmission_task	(void *pvParameters);
 
 
 #endif /* MAIN_UART_CONFIG_H_ */

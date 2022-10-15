@@ -24,6 +24,8 @@
 #include "unix_timestamp.h"
 #include "http_request.h"
 #include "cJSON.h"
+
+#include "math.h"
 /* MACROS --------------------------------------------------------------------*/
 #define TIME_STRING_SIZE		5
 #define DATE_STRING_SIZE		10
@@ -36,14 +38,15 @@
 typedef struct
 {
 	char 	timeString	[5];
-	char 	dateString	[5];
-	char 	weatherDesc [30];
+	char 	dateString	[12];
+	char 	weatherDesc [40];
 	uint8_t tempreture	[2];
 
 
 }apiWeather_t;
 /* VARIABLES -----------------------------------------------------------------*/
 extern QueueHandle_t apiWeather_queue;
+extern int prevTime;
 /* FUNCTIONS DECLARATION -----------------------------------------------------*/
 void http_json_parser(void *pvParameters);
 

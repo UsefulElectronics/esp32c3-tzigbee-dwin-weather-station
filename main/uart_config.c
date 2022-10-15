@@ -75,7 +75,7 @@ void uart_config(void)
     const uart_config_t uart_config =
     {
     	//TODO								//Baud rate must be set to 115200 for PingPong Example
-        .baud_rate = 11520,
+        .baud_rate = 115200,
         .data_bits = UART_DATA_8_BITS,
         .parity = UART_PARITY_DISABLE,
         .stop_bits = UART_STOP_BITS_1,
@@ -94,17 +94,20 @@ void uart_config(void)
 
     uartBufferInit();
 
-    uartTx_queue = xQueueCreate(5, TX_BUF_SIZE);
+    uartTx_queue = xQueueCreate(10, sizeof(uartHandler_t));
 }
 
 void uart_transmission_task(void *pvParameters)
 {
-
+	int dataTransmitted = 0;
 	while(1)
 	{
-		if(xQueueReceive(uartTx_queue, (void * )hUart.uart_txBuffer, (portTickType)portMAX_DELAY))
+		if(xQueueReceive(uartTx_queue, (void *)&hUart, portMAX_DELAY))
 		{
 
+			dataTransmitted = uart_write_bytes(UART_AT_PORT, hUart.uart_txBuffer, hUart.uart_txPacketSize);
+
+			vTaskDelay(50/portTICK_PERIOD_MS);
 		}
 	}
 }
@@ -139,10 +142,10 @@ void uart_event_task(void *pvParameters)
 
 //                	ESP_LOGI(UART_DEBUG, "%d", event.size);
 
-                    xSemaphoreGive(UART_RXsem);
-                    hUart.uart_rxPacketSize = event.size;
-                    memcpy(hUart.uart_rxBuffer, dtmp, event.size);
-                    hUart.uart_status.flags.rxPacket = 1;
+//                    xSemaphoreGive(UART_RXsem);
+//                    hUart.uart_rxPacketSize = event.size;
+//                    memcpy(hUart.uart_rxBuffer, dtmp, event.size);
+//                    hUart.uart_status.flags.rxPacket = 1;
                     break;
                 //Event of HW FIFO overflow detected
                 case UART_FIFO_OVF:

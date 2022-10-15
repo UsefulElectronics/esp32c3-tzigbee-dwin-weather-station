@@ -49,32 +49,40 @@ uint8_t dwinMakePacket(char* buffer, dwin_packetId_e packetId)
 	{
 		case DWIN_WEATHER_TEXT:
 
-			tempBuffer[DWIN_OPERATION_POSISION] = DWIN_WRITE_OPERATION;
+			tempBuffer[DWIN_SIZE_POSISION] = strlen(buffer) + 3;
 
-			packetLength = strlen(buffer) + DWIN_OVERHEAD_SIZE;
+			packetLength = 40;
+
+			memcpy(&tempBuffer[DWIN_ADDRESS_POSISION], DWIN_WEATHER_TEXT_ADDRESS, DWIN_ADDRESS_SIZE);
 
 			memcpy(&tempBuffer[DWIN_DATA_START_POSISION], buffer, strlen(buffer));
 
 			break;
 		case DWIN_TEMPRETURE:
-			tempBuffer[DWIN_SIZE_POSISION] = DWIN_TEMRETURE_SIZE;
+			tempBuffer[DWIN_SIZE_POSISION] = DWIN_TEMRETURE_SIZE + 3;
 
 			packetLength = DWIN_TEMRETURE_SIZE + DWIN_OVERHEAD_SIZE;
+
+			memcpy(&tempBuffer[DWIN_ADDRESS_POSISION], DWIN_TEMPRETURE_ADDRESS, DWIN_ADDRESS_SIZE);
 
 			memcpy(&tempBuffer[DWIN_DATA_START_POSISION], buffer, DWIN_TEMRETURE_SIZE);
 			break;
 		case DWIN_TIME:
-			tempBuffer[DWIN_SIZE_POSISION] = DWIN_TIME_SIZE;
+			tempBuffer[DWIN_SIZE_POSISION] = DWIN_TIME_SIZE + 3;
 
 			packetLength = DWIN_TIME_SIZE + DWIN_OVERHEAD_SIZE;
+
+			memcpy(&tempBuffer[DWIN_ADDRESS_POSISION], DWIN_TIME_ADDRESS, DWIN_ADDRESS_SIZE);
 
 			memcpy(&tempBuffer[DWIN_DATA_START_POSISION], buffer, DWIN_TIME_SIZE);
 
 			break;
 		case DWIN_DATE:
-			tempBuffer[DWIN_SIZE_POSISION] = DWIN_DATE_SIZE;
+			tempBuffer[DWIN_SIZE_POSISION] = DWIN_DATE_SIZE + 3;
 
 			packetLength = DWIN_DATE_SIZE + DWIN_OVERHEAD_SIZE;
+
+			memcpy(&tempBuffer[DWIN_ADDRESS_POSISION], DWIN_DATE_ADDRESS, DWIN_ADDRESS_SIZE);
 
 			memcpy(&tempBuffer[DWIN_DATA_START_POSISION], buffer, DWIN_DATE_SIZE);
 
@@ -83,6 +91,7 @@ uint8_t dwinMakePacket(char* buffer, dwin_packetId_e packetId)
 		default:
 			break;
 	}
+
 
 	memcpy(buffer, tempBuffer, packetLength);
 
