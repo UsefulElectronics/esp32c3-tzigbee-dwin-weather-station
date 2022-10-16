@@ -85,7 +85,16 @@ uint8_t dwinMakePacket(char* buffer, dwin_packetId_e packetId)
 			memcpy(&tempBuffer[DWIN_ADDRESS_POSISION], DWIN_DATE_ADDRESS, DWIN_ADDRESS_SIZE);
 
 			memcpy(&tempBuffer[DWIN_DATA_START_POSISION], buffer, DWIN_DATE_SIZE);
+			break;
 
+		case DWIN_ICON:
+			tempBuffer[DWIN_SIZE_POSISION] = DWIN_ICON_SIZE + 3;
+
+			packetLength = DWIN_ICON_SIZE + DWIN_OVERHEAD_SIZE;
+
+			memcpy(&tempBuffer[DWIN_ADDRESS_POSISION], DWIN_ICON_ADDRESS, DWIN_ADDRESS_SIZE);
+
+			memcpy(&tempBuffer[DWIN_DATA_START_POSISION], buffer, DWIN_DATE_SIZE);
 
 			break;
 		default:

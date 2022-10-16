@@ -105,6 +105,12 @@ static void peripheral_handler_task(void *pvParameters)
 	{
 		if(xQueueReceive(apiWeather_queue, (void *)&WeatherParam, (portTickType)portMAX_DELAY))
 		{
+			memcpy(diplayBuffer.uart_txBuffer, DWIN_STIRNG_CLEAR, DWIN_STIRNG_CLEAR_SIZE);
+
+			diplayBuffer.uart_txPacketSize = DWIN_STIRNG_CLEAR_SIZE;
+
+			xQueueSendToBack(uartTx_queue, (void *)&diplayBuffer, portMAX_DELAY);
+
 			memcpy(diplayBuffer.uart_txBuffer,
 					WeatherParam.weatherDesc,
 					strlen(WeatherParam.weatherDesc));
@@ -142,6 +148,15 @@ static void peripheral_handler_task(void *pvParameters)
 					WeatherParam.tempreture, DWIN_TEMRETURE_SIZE);
 
 			diplayBuffer.uart_txPacketSize = dwinMakePacket((char*) diplayBuffer.uart_txBuffer, DWIN_TEMPRETURE);
+
+			xQueueSendToBack(uartTx_queue, &diplayBuffer, portMAX_DELAY);
+
+			memset(&diplayBuffer, 0, sizeof(uartHandler_t));
+
+			memcpy(diplayBuffer.uart_txBuffer,
+					WeatherParam.weatherIcon, DWIN_ICON_SIZE);
+
+			diplayBuffer.uart_txPacketSize = dwinMakePacket((char*) diplayBuffer.uart_txBuffer, DWIN_ICON);
 
 			xQueueSendToBack(uartTx_queue, &diplayBuffer, portMAX_DELAY);
 		}

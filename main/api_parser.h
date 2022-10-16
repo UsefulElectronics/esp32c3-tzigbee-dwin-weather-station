@@ -27,11 +27,12 @@
 
 #include "math.h"
 /* MACROS --------------------------------------------------------------------*/
-#define TIME_STRING_SIZE		5
-#define DATE_STRING_SIZE		10
-#define TEMPRETURE_WORD_SIZE	5
+#define TIME_STRING_SIZE			5
+#define DATE_STRING_SIZE			10
+#define TEMPRETURE_WORD_SIZE		5
 
-
+#define WEATHER_ICON_STIRNG_COUNT	18
+#define WEATHER_ICON_STIRNG_LENGTH 	4
 /* ENUMORATIONS --------------------------------------------------------------*/
 
 /* STRUCTURES & TYPEDEFS -----------------------------------------------------*/
@@ -41,6 +42,7 @@ typedef struct
 	char 	dateString	[12];
 	char 	weatherDesc [40];
 	uint8_t tempreture	[2];
+	uint8_t weatherIcon	[2];
 
 
 }apiWeather_t;

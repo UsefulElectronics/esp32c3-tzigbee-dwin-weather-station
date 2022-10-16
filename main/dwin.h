@@ -20,10 +20,14 @@
 #include "esp_log.h"
 /* MACROS --------------------------------------------------------------------*/
 #define DWIN_START_BYTES				"\x5A\xA5"
+#define DWIN_ICON_ADDRESS				"\x54\x00"
 #define DWIN_WEATHER_TEXT_ADDRESS		"\x53\x00"
 #define DWIN_TEMPRETURE_ADDRESS			"\x52\x00"
 #define DWIN_DATE_ADDRESS				"\x51\x00"
 #define DWIN_TIME_ADDRESS				"\x50\x00"
+
+#define DWIN_STIRNG_CLEAR				"\x53\x00\x5A\xA5\x05\x82\x53\x00\x00\x00"
+#define DWIN_STIRNG_CLEAR_SIZE			10
 
 #define DWIN_ADDRESS_SIZE				2
 #define DWIN_START_BYTES_SIZE			2
@@ -31,6 +35,7 @@
 #define DWIN_DATE_SIZE					10
 #define DWIN_TIME_SIZE					5
 #define DWIN_TEMRETURE_SIZE				2
+#define DWIN_ICON_SIZE					2
 
 #define DWIN_WRITE_OPERATION			0x82
 #define DWIN_READ_OPERATION				0x83
@@ -46,7 +51,8 @@ typedef enum
 	DWIN_WEATHER_TEXT = 0,
 	DWIN_TEMPRETURE,
 	DWIN_TIME,
-	DWIN_DATE
+	DWIN_DATE,
+	DWIN_ICON
 }dwin_packetId_e;
 /* STRUCTURES & TYPEDEFS -----------------------------------------------------*/
 

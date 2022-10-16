@@ -22,6 +22,52 @@ static const char *TAG = "JSON";
 QueueHandle_t apiWeather_queue;
 
 int prevTime = 0;
+
+const char weatherIconArray[WEATHER_ICON_STIRNG_COUNT][WEATHER_ICON_STIRNG_LENGTH] =
+{
+	"01d",
+	"02d",
+	"03d",
+	"04d",
+	"09d",
+	"10d",
+	"11d",
+	"13d",
+	"50d",
+	"01n",
+	"02n",
+	"03n",
+	"04n",
+	"09n",
+	"10n",
+	"11n",
+	"13n",
+	"50n",
+
+};
+
+const uint8_t weatherIconId[WEATHER_ICON_STIRNG_COUNT] =
+{
+	0,
+	1,
+	2,
+	2,
+	3,
+	4,
+	5,
+	6,
+	7,
+	8,
+	9,
+	2,
+	2,
+	3,
+	10,
+	5,
+	6,
+	7
+};
+
 /* DEFINITIONS ---------------------------------------------------------------*/
 
 /* MACROS --------------------------------------------------------------------*/
@@ -34,6 +80,8 @@ static void parsedDateUpdate			(char* date, int day, int month, int year);
 static void parsedTempretureUpdate		(uint8_t* weatherTemp, float tempreture);
 
 static void parsedWeatherString			(char* weatherDesc, char* description);
+
+static void parsedIconValue(uint8_t* weatherIconValue ,char* weatherIconStirng);
 /* FUNCTIONS DECLARATION -----------------------------------------------------*/
 /**
  * @brief
@@ -80,18 +128,13 @@ void http_json_parser(void *pvParameters)
 			    	dateTime.tm_hour -= 24;
 			    }
 
-
 			    parsedTimeUpdate(WeatherParam.timeString, dateTime.tm_min, dateTime.tm_hour);
 
 			    parsedDateUpdate(WeatherParam.dateString, dateTime.tm_mday, dateTime.tm_mon, dateTime.tm_year);
 
 			    jElement = cJSON_GetObjectItemCaseSensitive(ResponseJson, "main");
 
-
-
 			    jElement->child = cJSON_GetObjectItemCaseSensitive(jElement, "temp");
-
-//			    ESP_LOGI(TAG, "temp: %.02f", jElement->child->valuedouble);
 
 			    parsedTempretureUpdate(WeatherParam.tempreture, jElement->child->valuedouble);
 
@@ -99,15 +142,11 @@ void http_json_parser(void *pvParameters)
 
 			    jElement = cJSON_GetObjectItemCaseSensitive(jWeatherArray->child, "description");
 
-
-//				if(cJSON_IsString(jElement))
-//				{
-//					ESP_LOGI(TAG, "Weather Desc: %s",jElement->valuestring);
-//				}
-
 				parsedWeatherString(WeatherParam.weatherDesc, jElement->valuestring);
 
+				 jElement = cJSON_GetObjectItemCaseSensitive(jWeatherArray->child, "icon");
 
+				 parsedIconValue(WeatherParam.weatherIcon ,jElement->valuestring);
 
 				xQueueSendToBack(apiWeather_queue, (void *)&WeatherParam, portMAX_DELAY);
 
@@ -158,5 +197,32 @@ static void parsedTempretureUpdate(uint8_t* weatherTemp, float tempreture)
 static void parsedWeatherString(char* weatherDesc, char* description)
 {
 	strcpy(weatherDesc, description);
+}
+/**
+ * @brief 	Get the corresponding icon ID of display out of the received icon string from the API
+ *
+ * @param weatherIconValue
+ * @param weatherIconStirng
+ */
+static void parsedIconValue(uint8_t* weatherIconValue ,char* weatherIconStirng)
+{
+	uint8_t counter = 0;
+
+	const uint8_t maxLimit = WEATHER_ICON_STIRNG_COUNT + 1;
+
+
+	for(;counter < maxLimit; ++counter)
+	{
+		if(0 == memcmp(weatherIconStirng, weatherIconArray[counter], 3))
+		{
+			ESP_LOGI(TAG, "icon found %s", weatherIconStirng);
+			break;
+		}
+	}
+	if(maxLimit != counter )
+	{
+		weatherIconValue[0] = 0;
+		weatherIconValue[1] = weatherIconId[counter] ;
+	}
 }
 /**************************  Useful Electronics  ****************END OF FILE***/
