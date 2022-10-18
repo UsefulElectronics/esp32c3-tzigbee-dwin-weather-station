@@ -99,7 +99,7 @@ void httpClientInit(void)
 }
 
 
-void wifiInit_ssdConnect(void)
+void wifiInit_ssidConnect(void)
 {
 	//Create queue for transfaring data received over HTTP response to the main layer
 

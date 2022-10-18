@@ -33,6 +33,13 @@ static void peripheral_handler_task	(void *pvParameters);
 static void time_handle_task		(void *pvParameters);
 /* FUNCTIONS DECLARATION -----------------------------------------------------*/
 
+/**
+ * @brief 	This task handles the time parameter and keeps track of it even if
+ * 			the open weather API does not update it. Every one second the time packet is
+ * 			sent to the display. Second  is done here as well.
+ *
+ * @param pvParameters
+ */
 static void time_handle_task(void *pvParameters)
 {
 	static int timeStamp = 0;
@@ -89,9 +96,8 @@ static void time_handle_task(void *pvParameters)
 	}
 }
 /**
- * @brief
- *
- * @param pvParameters
+ * @brief	In this task the data obtained from API JSO parsing is handled to form DWIN display commands
+ * 			and passed to the UART TX Queue
  */
 static void peripheral_handler_task(void *pvParameters)
 {
@@ -118,20 +124,8 @@ static void peripheral_handler_task(void *pvParameters)
 
 			diplayBuffer.uart_txPacketSize = dwinMakePacket((char*) diplayBuffer.uart_txBuffer, DWIN_WEATHER_TEXT);
 
-//			ESP_LOGI(TAG, "formed packet size %d", diplayBuffer.uart_txPacketSize);
-
 			xQueueSendToBack(uartTx_queue, (void *)&diplayBuffer, portMAX_DELAY);
-//
-//			memset(&diplayBuffer, 0, sizeof(uartHandler_t));
-//
-//			memcpy(diplayBuffer.uart_txBuffer,
-//					WeatherParam.timeString,
-//					strlen(WeatherParam.timeString));
-//
-//			diplayBuffer.uart_txPacketSize = dwinMakePacket((char*) diplayBuffer.uart_txBuffer, DWIN_TIME);
-//
-//			xQueueSendToBack(uartTx_queue, &diplayBuffer, portMAX_DELAY);
-////
+
 			memset(&diplayBuffer, 0, sizeof(uartHandler_t));
 
 			memcpy(diplayBuffer.uart_txBuffer,
@@ -174,7 +168,7 @@ bool idle_task_callback(void)
 
 
 /**
- * @brief
+ * @brief 	System initialization and FreeRTOS task creation is done here
  *
  */
 void app_main(void)
@@ -187,7 +181,7 @@ void app_main(void)
       ret = nvs_flash_init();
     }
 
-	wifiInit_ssdConnect();
+	wifiInit_ssidConnect();
 
 	uart_config();
 

@@ -57,7 +57,7 @@ void http_get_task			(void *pvParameters);
 
 
 
-void wifiInit_ssdConnect	(void);
+void wifiInit_ssidConnect	(void);
 
 #endif /* MAIN_HTTP_REQUEST_H_ */
 
