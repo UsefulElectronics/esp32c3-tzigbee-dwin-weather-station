@@ -48,8 +48,6 @@ static void time_handle_task(void *pvParameters)
 
 	struct tm timestruct;
 
-	uint8_t secondsCounter = 0;
-
 	uint8_t secondsToggle = 0;
 
 	while(1)
@@ -57,8 +55,6 @@ static void time_handle_task(void *pvParameters)
 		if(timeStamp <= prevTime )
 		{
 			timeStamp = prevTime;
-
-			secondsCounter = 0;
 		}
 
 		if(timeStamp > 0)

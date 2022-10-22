@@ -26,10 +26,20 @@
 static const char *TAG = "DWIN";
 /* FUNCTION PROTOTYPES -------------------------------------------------------*/
 /**
- * @brief 5a a5 05 82 52 00 10 00
+ * @brief 	Example of DWIN display packet: 5a a5 05 82 52 00 10 00 (Hex)
+ * 			Start Bytes: 	5a a5
+ * 			PayloadSize:	05
+ * 			Write Command:	82
+ * 			Target Address:	52 00
+ * 			Data:			10 00
  *
- * @param buffer
- * @param packetId
+ *			This function will form the DWIN display packet according to passed packetId
+ *
+ * @param 	buffer: 	This buffer will have the data to be sent to display. It will be used for packet formation.
+ * 						The formed packet will be also placed in the same buffer.
+ *
+ * @param 	packetId:	Select the address, packet size this packet is going to be sent to.
+ *
  * @return	The size of the formed packet, if this function returns 0 then packet has been formed.
  */
 
