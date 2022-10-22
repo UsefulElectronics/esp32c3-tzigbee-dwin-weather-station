@@ -21,6 +21,6 @@ In this tutorial, a DIY weather station is built using ESP32C3 that is connected
 
 CJSON library is used for  parsing JSON file that is obtained from the OpenWeather API. FreeRTOS queue is used to let the tasks communicate and exchange data. DWIN compatible packets are created using the obtained data and sent over UART to the display. 3D printed case is also used to put all the project components and make everything look nice.
 
-![Circuit Diagram](https://github.com/UsefulElectronics/esp32c3-tzigbee-dwin-weather-station/repo%20cover/video%20cover.png)
+![Circuit Diagram](https://github.com/UsefulElectronics/esp32c3-tzigbee-dwin-weather-station/blob/main/repo%20cover/video%20cover.png)
 
-![Weather Station Case](https://github.com/UsefulElectronics/esp32c3-tzigbee-dwin-weather-station/repo%20cover/Weather%20station%20case.jpg)
+![Weather Station Case](https://github.com/UsefulElectronics/esp32c3-tzigbee-dwin-weather-station/blob/main/repo%20cover/Weather%20station%20case.jpg)
