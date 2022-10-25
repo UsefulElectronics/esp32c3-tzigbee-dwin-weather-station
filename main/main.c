@@ -181,16 +181,16 @@ void app_main(void)
 
 	uart_config();
 
-    xTaskCreate(&uart_transmission_task, "UART_TX_task", 2 * 4096, NULL, 3, NULL);
+    xTaskCreate(&uart_transmission_task, "UART_TX_task", 1 * 4096, NULL, 1, NULL);
 
-    xTaskCreate(&http_get_task, "http_get_task",2* 4096, NULL, 4, NULL);
+    xTaskCreate(&http_get_task, "http_get_task",1* 4096, NULL, 1, NULL);
 
-    xTaskCreate(&http_json_parser, "json_parser_task",2 * 4096, NULL, 4, NULL);
+    xTaskCreate(&http_json_parser, "json_parser_task",1 * 4096, NULL, 1, NULL);
 
 
-    xTaskCreate(&peripheral_handler_task, "system_Handler_task",2 * 4096, NULL, 4, NULL);
+    xTaskCreate(&peripheral_handler_task, "system_Handler_task",1 * 4096, NULL, 1, NULL);
 
-    xTaskCreate(&time_handle_task, "system_Handler_task",4096, NULL, 4, NULL);
+    xTaskCreate(&time_handle_task, "system_Handler_task",4096, NULL, 1, NULL);
 
 
     esp_register_freertos_idle_hook_for_cpu(idle_task_callback, 0);

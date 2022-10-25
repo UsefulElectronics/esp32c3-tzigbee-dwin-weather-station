@@ -42,9 +42,8 @@ typedef struct
 	char 	dateString	[12];
 	char 	weatherDesc [40];
 	uint8_t tempreture	[2];
+	uint8_t humidity	[2];
 	uint8_t weatherIcon	[2];
-
-
 }apiWeather_t;
 /* VARIABLES -----------------------------------------------------------------*/
 extern QueueHandle_t apiWeather_queue;

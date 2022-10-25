@@ -81,7 +81,9 @@ static void parsedTempretureUpdate		(uint8_t* weatherTemp, float tempreture);
 
 static void parsedWeatherString			(char* weatherDesc, char* description);
 
-static void parsedIconValue(uint8_t* weatherIconValue ,char* weatherIconStirng);
+static void parsedIconValue				(uint8_t* weatherIconValue ,char* weatherIconStirng);
+
+static void parsedHumidityUpdate		(uint8_t* weatherHum, int humidity);
 /* FUNCTIONS DECLARATION -----------------------------------------------------*/
 /**
  * @brief
@@ -112,6 +114,7 @@ void http_json_parser(void *pvParameters)
 
 		    if(ResponseJson != NULL)
 		    {
+		    	//Parsing time and date value.
 			    jElement = cJSON_GetObjectItemCaseSensitive(ResponseJson, "dt");
 
 //			    ESP_LOGI(TAG, "time: %d.", jElement->valueint);
@@ -132,21 +135,31 @@ void http_json_parser(void *pvParameters)
 
 			    parsedDateUpdate(WeatherParam.dateString, dateTime.tm_mday, dateTime.tm_mon, dateTime.tm_year);
 
+			    //Parsing temperature value.
 			    jElement = cJSON_GetObjectItemCaseSensitive(ResponseJson, "main");
 
 			    jElement->child = cJSON_GetObjectItemCaseSensitive(jElement, "temp");
 
 			    parsedTempretureUpdate(WeatherParam.tempreture, jElement->child->valuedouble);
 
+			    //Parsing humidity value.
+			    jElement->child = cJSON_GetObjectItemCaseSensitive(jElement, "humidity");
+
+			    parsedHumidityUpdate(WeatherParam.humidity, jElement->child->valueint);
+
+			    ESP_LOGI(TAG, "humidity: %d.", jElement->child->valueint);
+
+			    //Parsing weather description value.
 			    jWeatherArray = cJSON_GetObjectItemCaseSensitive(ResponseJson, "weather");
 
 			    jElement = cJSON_GetObjectItemCaseSensitive(jWeatherArray->child, "description");
 
 				parsedWeatherString(WeatherParam.weatherDesc, jElement->valuestring);
 
-				 jElement = cJSON_GetObjectItemCaseSensitive(jWeatherArray->child, "icon");
+				//Parsing weather icon value.
+				jElement = cJSON_GetObjectItemCaseSensitive(jWeatherArray->child, "icon");
 
-				 parsedIconValue(WeatherParam.weatherIcon ,jElement->valuestring);
+				parsedIconValue(WeatherParam.weatherIcon ,jElement->valuestring);
 
 				xQueueSendToBack(apiWeather_queue, (void *)&WeatherParam, portMAX_DELAY);
 
@@ -191,6 +204,17 @@ static void parsedTempretureUpdate(uint8_t* weatherTemp, float tempreture)
 /**
  * @brief
  *
+ * @param weatherHum
+ * @param humidity
+ */
+static void parsedHumidityUpdate(uint8_t* weatherHum, int humidity)
+{
+	weatherHum[0] = 0;
+	weatherHum[1] = (uint8_t) humidity;
+}
+/**
+ * @brief
+ *
  * @param weatherDesc
  * @param description
  */
@@ -225,4 +249,6 @@ static void parsedIconValue(uint8_t* weatherIconValue ,char* weatherIconStirng)
 		weatherIconValue[1] = weatherIconId[counter] ;
 	}
 }
+
+
 /**************************  Useful Electronics  ****************END OF FILE***/

@@ -40,7 +40,7 @@ void http_get_task(void *pvParameters)
     {
     	httpClientInit();
 
-        vTaskDelay(61000 / portTICK_PERIOD_MS);
+        vTaskDelay(3600000 / portTICK_PERIOD_MS);
     }
 }
 
@@ -86,7 +86,9 @@ void httpClientInit(void)
         .url = OPEN_WEATHER_URL,
         .method = HTTP_METHOD_GET,
         .cert_pem = NULL,
-        .event_handler = http_event_handler
+        .event_handler = http_event_handler,
+
+
     };
 
     esp_http_client_handle_t client = esp_http_client_init(&config_get);
