@@ -30,17 +30,54 @@ hHttpPort_t hHttpResponse;
 
 /* PRIVATE FUNCTIONS DECLARATION ---------------------------------------------*/
 //static void http_event_handler	(esp_http_client_event_t *evt);
-static void httpClientInit		(void);
+static void httpClientInit		(char* urlString, urlId_e urlId);
+
 /* FUNCTION PROTOTYPES -------------------------------------------------------*/
-void http_get_task(void *pvParameters)
+void http_get_weather_task(void *pvParameters)
 {
 
 	httpRx_queue = xQueueCreate(3, sizeof(hHttpPort_t));
     while(1)
     {
-    	httpClientInit();
+    	httpClientInit(OPEN_WEATHER_URL, URL_WEATHER);
 
         vTaskDelay(3600000 / portTICK_PERIOD_MS);
+    }
+}
+
+void http_get_bitcoin_task(void *pvParameters)
+{
+
+	httpRx_queue = xQueueCreate(3, sizeof(hHttpPort_t));
+    while(1)
+    {
+    	httpClientInit(BITCOIN_URL, URL_BTC);
+
+        vTaskDelay(60000 / portTICK_PERIOD_MS);
+    }
+}
+
+void http_get_ethereum_task(void *pvParameters)
+{
+
+	httpRx_queue = xQueueCreate(3, sizeof(hHttpPort_t));
+    while(1)
+    {
+    	httpClientInit(ETHEREUM_URL, URL_ETH);
+
+        vTaskDelay(60000 / portTICK_PERIOD_MS);
+    }
+}
+
+void http_get_prayer_task(void *pvParameters)
+{
+
+	httpRx_queue = xQueueCreate(3, sizeof(hHttpPort_t));
+    while(1)
+    {
+    	httpClientInit(PRAYER_API, URL_PRAYER);
+
+        vTaskDelay(86400000 / portTICK_PERIOD_MS);
     }
 }
 
@@ -67,9 +104,11 @@ static void http_event_handler(esp_http_client_event_t *evt)
 
             hHttpResponse.packetSize = strlen(hHttpResponse.packetBuffer);
 
-            xQueueSendToBack(httpRx_queue, &hHttpResponse, portMAX_DELAY);
+//            xQueueSendToBack(httpRx_queue, &hHttpResponse, portMAX_DELAY);
 
             memset(&hHttpResponse, 0, sizeof(hHttpPort_t));
+
+
 
             break;
 
@@ -78,33 +117,30 @@ static void http_event_handler(esp_http_client_event_t *evt)
 	}
 }
 
-void httpClientInit(void)
+void httpClientInit(char* urlString, urlId_e urlId)
 {
 
     esp_http_client_config_t config_get =
     {
-        .url = OPEN_WEATHER_URL,
+        .url = urlString,
         .method = HTTP_METHOD_GET,
         .cert_pem = NULL,
         .event_handler = http_event_handler,
-
-
     };
+
+    hHttpResponse.urlId	= urlId;
 
     esp_http_client_handle_t client = esp_http_client_init(&config_get);
     //Perform HTTP request
     esp_http_client_perform(client);
     //Close socket after getting a response to the GET request
     esp_http_client_cleanup(client);
-
-
 }
 
 
 void wifiInit_ssidConnect(void)
 {
 	//Create queue for transfaring data received over HTTP response to the main layer
-
 
 
     ESP_ERROR_CHECK(esp_netif_init());

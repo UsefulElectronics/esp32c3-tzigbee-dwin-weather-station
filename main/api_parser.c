@@ -84,6 +84,8 @@ static void parsedWeatherString			(char* weatherDesc, char* description);
 static void parsedIconValue				(uint8_t* weatherIconValue ,char* weatherIconStirng);
 
 static void parsedHumidityUpdate		(uint8_t* weatherHum, int humidity);
+
+static void parseWeatherUrl				(hHttpPort_t hHttpResponse);
 /* FUNCTIONS DECLARATION -----------------------------------------------------*/
 /**
  * @brief
@@ -94,10 +96,6 @@ void http_json_parser(void *pvParameters)
 {
 	hHttpPort_t hHttpResponse;
 
-	struct tm dateTime;
-
-	apiWeather_t WeatherParam;
-
 	apiWeather_queue = xQueueCreate(5, sizeof(apiWeather_t));
 
 	while(1)
@@ -105,65 +103,26 @@ void http_json_parser(void *pvParameters)
 		if(xQueueReceive(httpRx_queue, (void * )&hHttpResponse, (portTickType)portMAX_DELAY))
 		{
 //			ESP_LOGI(TAG, "Packet size=%d JSON: %s.", hHttpResponse.packetSize, hHttpResponse.packetBuffer);
+	    	switch (hHttpResponse.urlId)
+	    	{
+				case URL_WEATHER:
 
-		    cJSON *jElement 		= NULL;
+					parseWeatherUrl(hHttpResponse);
 
-		    cJSON *jWeatherArray	= NULL;
+					break;
+				case URL_BTC:
 
-		    cJSON *ResponseJson 	= cJSON_Parse(hHttpResponse.packetBuffer);
+					break;
+				case URL_ETH:
 
-		    if(ResponseJson != NULL)
-		    {
-		    	//Parsing time and date value.
-			    jElement = cJSON_GetObjectItemCaseSensitive(ResponseJson, "dt");
+					break;
+				case URL_PRAYER:
 
-//			    ESP_LOGI(TAG, "time: %d.", jElement->valueint);
+					break;
 
-			    prevTime = jElement->valueint;
-
-			    time_unixStampToLocalTime(jElement->valueint, &dateTime);
-
-			    dateTime.tm_mon += 1;
-			    dateTime.tm_year += 1900;
-			    dateTime.tm_hour += 3;
-			    if(dateTime.tm_hour >= 24)
-			    {
-			    	dateTime.tm_hour -= 24;
-			    }
-
-			    parsedTimeUpdate(WeatherParam.timeString, dateTime.tm_min, dateTime.tm_hour);
-
-			    parsedDateUpdate(WeatherParam.dateString, dateTime.tm_mday, dateTime.tm_mon, dateTime.tm_year);
-
-			    //Parsing temperature value.
-			    jElement = cJSON_GetObjectItemCaseSensitive(ResponseJson, "main");
-
-			    jElement->child = cJSON_GetObjectItemCaseSensitive(jElement, "temp");
-
-			    parsedTempretureUpdate(WeatherParam.tempreture, jElement->child->valuedouble);
-
-			    //Parsing humidity value.
-			    jElement->child = cJSON_GetObjectItemCaseSensitive(jElement, "humidity");
-
-			    parsedHumidityUpdate(WeatherParam.humidity, jElement->child->valueint);
-
-			    ESP_LOGI(TAG, "humidity: %d.", jElement->child->valueint);
-
-			    //Parsing weather description value.
-			    jWeatherArray = cJSON_GetObjectItemCaseSensitive(ResponseJson, "weather");
-
-			    jElement = cJSON_GetObjectItemCaseSensitive(jWeatherArray->child, "description");
-
-				parsedWeatherString(WeatherParam.weatherDesc, jElement->valuestring);
-
-				//Parsing weather icon value.
-				jElement = cJSON_GetObjectItemCaseSensitive(jWeatherArray->child, "icon");
-
-				parsedIconValue(WeatherParam.weatherIcon ,jElement->valuestring);
-
-				xQueueSendToBack(apiWeather_queue, (void *)&WeatherParam, portMAX_DELAY);
-
-		    }
+				default:
+					break;
+			}
 		}
 	}
 }
@@ -249,6 +208,94 @@ static void parsedIconValue(uint8_t* weatherIconValue ,char* weatherIconStirng)
 		weatherIconValue[1] = weatherIconId[counter] ;
 	}
 }
+/**
+ * @brief
+ *
+ * @param hHttpResponse
+ */
+static void parseWeatherUrl(hHttpPort_t hHttpResponse)
+{
 
+	struct tm dateTime;
+
+	apiWeather_t WeatherParam;
+
+    cJSON *jElement 		= NULL;
+
+    cJSON *jWeatherArray	= NULL;
+
+    cJSON *ResponseJson 	= cJSON_Parse(hHttpResponse.packetBuffer);
+    if(ResponseJson != NULL)
+    {
+
+
+
+
+    	//Parsing time and date value.
+	    jElement = cJSON_GetObjectItemCaseSensitive(ResponseJson, "dt");
+
+//			    ESP_LOGI(TAG, "time: %d.", jElement->valueint);
+
+	    prevTime = jElement->valueint;
+
+	    time_unixStampToLocalTime(jElement->valueint, &dateTime);
+
+	    dateTime.tm_mon += 1;
+	    dateTime.tm_year += 1900;
+	    dateTime.tm_hour += 3;
+	    if(dateTime.tm_hour >= 24)
+	    {
+	    	dateTime.tm_hour -= 24;
+	    }
+
+	    parsedTimeUpdate(WeatherParam.timeString, dateTime.tm_min, dateTime.tm_hour);
+
+	    parsedDateUpdate(WeatherParam.dateString, dateTime.tm_mday, dateTime.tm_mon, dateTime.tm_year);
+
+	    //Parsing temperature value.
+	    jElement = cJSON_GetObjectItemCaseSensitive(ResponseJson, "main");
+
+	    jElement->child = cJSON_GetObjectItemCaseSensitive(jElement, "temp");
+
+	    parsedTempretureUpdate(WeatherParam.tempreture, jElement->child->valuedouble);
+
+	    //Parsing humidity value.
+	    jElement->child = cJSON_GetObjectItemCaseSensitive(jElement, "humidity");
+
+	    parsedHumidityUpdate(WeatherParam.humidity, jElement->child->valueint);
+
+	    ESP_LOGI(TAG, "humidity: %d.", jElement->child->valueint);
+
+	    //Parsing weather description value.
+	    jWeatherArray = cJSON_GetObjectItemCaseSensitive(ResponseJson, "weather");
+
+	    jElement = cJSON_GetObjectItemCaseSensitive(jWeatherArray->child, "description");
+
+		parsedWeatherString(WeatherParam.weatherDesc, jElement->valuestring);
+
+		//Parsing weather icon value.
+		jElement = cJSON_GetObjectItemCaseSensitive(jWeatherArray->child, "icon");
+
+		parsedIconValue(WeatherParam.weatherIcon ,jElement->valuestring);
+
+		xQueueSendToBack(apiWeather_queue, (void *)&WeatherParam, portMAX_DELAY);
+    }
+
+}
+/**
+ * @brief
+ *
+ * @param hHttpResponse
+ */
+static void parseBtcUrl(hHttpPort_t hHttpResponse)
+{
+    cJSON *jElement 		= NULL;
+
+    cJSON *ResponseJson 	= cJSON_Parse(hHttpResponse.packetBuffer);
+    if(ResponseJson != NULL)
+    {
+
+    }
+}
 
 /**************************  Useful Electronics  ****************END OF FILE***/

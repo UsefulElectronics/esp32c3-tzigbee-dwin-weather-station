@@ -43,19 +43,30 @@
 #define WIFI_FAIL_BIT      				BIT1
 #define EXAMPLE_ESP_MAXIMUM_RETRY  		10
 /* ENUMORATIONS --------------------------------------------------------------*/
-
+typedef enum
+{
+	URL_WEATHER 	= 0,
+	URL_BTC,
+	URL_ETH,
+	URL_PRAYER
+}urlId_e;
 /* STRUCTURES & TYPEDEFS -----------------------------------------------------*/
 typedef struct
 {
 	uint8_t packetSize;
+	urlId_e urlId;
 	char packetBuffer[HTTP_RESPONSE_LENGTH_MAX];
 }hHttpPort_t;
 /* VARIABLES -----------------------------------------------------------------*/
 extern QueueHandle_t httpRx_queue;
 /* FUNCTIONS DECLARATION -----------------------------------------------------*/
-void http_get_task			(void *pvParameters);
+void http_get_weather_task	(void *pvParameters);
 
+void http_get_bitcoin_task	(void *pvParameters);
 
+void http_get_ethereum_task	(void *pvParameters);
+
+void http_get_prayer_task	(void *pvParameters);
 
 void wifiInit_ssidConnect	(void);
 

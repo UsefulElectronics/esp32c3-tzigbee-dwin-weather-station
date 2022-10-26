@@ -178,15 +178,22 @@ void app_main(void)
     }
 
 	wifiInit_ssidConnect();
+	//Wait for WiFi Initialization and connection to be completed.
+	vTaskDelay(50/portTICK_PERIOD_MS);
 
 	uart_config();
 
     xTaskCreate(&uart_transmission_task, "UART_TX_task", 1 * 4096, NULL, 1, NULL);
 
-    xTaskCreate(&http_get_task, "http_get_task",1* 4096, NULL, 1, NULL);
+    xTaskCreate(&http_get_weather_task, "http_get_task",1* 4096, NULL, 1, NULL);
+
+//    xTaskCreate(&http_get_bitcoin_task, "http_get_task",1* 4096, NULL, 1, NULL);
+//
+//    xTaskCreate(&http_get_ethereum_task, "http_get_task",1* 4096, NULL, 1, NULL);
+//
+//    xTaskCreate(&http_get_prayer_task, "http_get_task",1* 4096, NULL, 1, NULL);
 
     xTaskCreate(&http_json_parser, "json_parser_task",1 * 4096, NULL, 1, NULL);
-
 
     xTaskCreate(&peripheral_handler_task, "system_Handler_task",1 * 4096, NULL, 1, NULL);
 
