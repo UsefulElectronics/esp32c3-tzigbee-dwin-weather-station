@@ -24,6 +24,7 @@
 #include "esp_wifi.h"
 #include "esp_event.h"
 #include "esp_log.h"
+#include "stdbool.h"
 
 #include "lwip/err.h"
 #include "lwip/sockets.h"
@@ -55,6 +56,7 @@ typedef struct
 {
 	uint8_t packetSize;
 	urlId_e urlId;
+	bool	available;
 	char packetBuffer[HTTP_RESPONSE_LENGTH_MAX];
 }hHttpPort_t;
 /* VARIABLES -----------------------------------------------------------------*/

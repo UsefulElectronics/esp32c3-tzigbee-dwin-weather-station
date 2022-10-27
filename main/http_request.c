@@ -36,10 +36,23 @@ static void httpClientInit		(char* urlString, urlId_e urlId);
 void http_get_weather_task(void *pvParameters)
 {
 
-	httpRx_queue = xQueueCreate(3, sizeof(hHttpPort_t));
+	httpRx_queue = xQueueCreate(5, sizeof(hHttpPort_t));
     while(1)
     {
-    	httpClientInit(OPEN_WEATHER_URL, URL_WEATHER);
+    	while(1)
+		{
+        	if(hHttpResponse.available)
+        	{
+        		httpClientInit(OPEN_WEATHER_URL, URL_WEATHER);
+        		break;
+        	}
+        	else
+        	{
+        		vTaskDelay(100 / portTICK_PERIOD_MS);
+        	}
+		}
+
+
 
         vTaskDelay(3600000 / portTICK_PERIOD_MS);
     }
@@ -48,10 +61,23 @@ void http_get_weather_task(void *pvParameters)
 void http_get_bitcoin_task(void *pvParameters)
 {
 
-	httpRx_queue = xQueueCreate(3, sizeof(hHttpPort_t));
+//	httpRx_queue = xQueueCreate(3, sizeof(hHttpPort_t));
     while(1)
     {
-    	httpClientInit(BITCOIN_URL, URL_BTC);
+//    	httpClientInit(BITCOIN_URL, URL_BTC);
+
+    	while(1)
+		{
+        	if(hHttpResponse.available)
+        	{
+        		httpClientInit(OPEN_WEATHER_URL, URL_BTC);
+        		break;
+        	}
+        	else
+        	{
+        		vTaskDelay(100 / portTICK_PERIOD_MS);
+        	}
+		}
 
         vTaskDelay(60000 / portTICK_PERIOD_MS);
     }
@@ -59,11 +85,20 @@ void http_get_bitcoin_task(void *pvParameters)
 
 void http_get_ethereum_task(void *pvParameters)
 {
-
-	httpRx_queue = xQueueCreate(3, sizeof(hHttpPort_t));
     while(1)
     {
-    	httpClientInit(ETHEREUM_URL, URL_ETH);
+    	while(1)
+		{
+        	if(hHttpResponse.available)
+        	{
+        		httpClientInit(OPEN_WEATHER_URL, URL_ETH);
+        		break;
+        	}
+        	else
+        	{
+        		vTaskDelay(100 / portTICK_PERIOD_MS);
+        	}
+		}
 
         vTaskDelay(60000 / portTICK_PERIOD_MS);
     }
@@ -72,10 +107,21 @@ void http_get_ethereum_task(void *pvParameters)
 void http_get_prayer_task(void *pvParameters)
 {
 
-	httpRx_queue = xQueueCreate(3, sizeof(hHttpPort_t));
+//	httpRx_queue = xQueueCreate(3, sizeof(hHttpPort_t));
     while(1)
     {
-    	httpClientInit(PRAYER_API, URL_PRAYER);
+    	while(1)
+		{
+        	if(hHttpResponse.available)
+        	{
+        		httpClientInit(OPEN_WEATHER_URL, URL_PRAYER);
+        		break;
+        	}
+        	else
+        	{
+        		vTaskDelay(100 / portTICK_PERIOD_MS);
+        	}
+		}
 
         vTaskDelay(86400000 / portTICK_PERIOD_MS);
     }
@@ -104,11 +150,17 @@ static void http_event_handler(esp_http_client_event_t *evt)
 
             hHttpResponse.packetSize = strlen(hHttpResponse.packetBuffer);
 
-//            xQueueSendToBack(httpRx_queue, &hHttpResponse, portMAX_DELAY);
+            xQueueSendToBack(httpRx_queue, &hHttpResponse, portMAX_DELAY);
 
             memset(&hHttpResponse, 0, sizeof(hHttpPort_t));
 
 
+            memcpy(&hHttpResponse.urlId ,evt->user_data, 1);
+
+            ESP_LOGI(TAG, "URL ID: %d", hHttpResponse.urlId);
+
+            hHttpResponse.available = true;
+//            hHttpResponse.urlId = (urlId_e)*(evt->user_data);
 
             break;
 
@@ -119,6 +171,7 @@ static void http_event_handler(esp_http_client_event_t *evt)
 
 void httpClientInit(char* urlString, urlId_e urlId)
 {
+	static urlId_e httpUrlId = 0;
 
     esp_http_client_config_t config_get =
     {
@@ -128,7 +181,13 @@ void httpClientInit(char* urlString, urlId_e urlId)
         .event_handler = http_event_handler,
     };
 
-    hHttpResponse.urlId	= urlId;
+    httpUrlId = urlId;
+
+    config_get.user_data = &httpUrlId;
+
+    hHttpResponse.available = false;
+
+//    hHttpResponse.urlId	= urlId;
 
     esp_http_client_handle_t client = esp_http_client_init(&config_get);
     //Perform HTTP request
@@ -152,6 +211,7 @@ void wifiInit_ssidConnect(void)
      */
     ESP_ERROR_CHECK(example_connect());
 
+    hHttpResponse.available = true;
 
 }
 

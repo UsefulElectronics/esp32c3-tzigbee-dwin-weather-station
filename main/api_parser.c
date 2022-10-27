@@ -227,10 +227,6 @@ static void parseWeatherUrl(hHttpPort_t hHttpResponse)
     cJSON *ResponseJson 	= cJSON_Parse(hHttpResponse.packetBuffer);
     if(ResponseJson != NULL)
     {
-
-
-
-
     	//Parsing time and date value.
 	    jElement = cJSON_GetObjectItemCaseSensitive(ResponseJson, "dt");
 
@@ -275,7 +271,7 @@ static void parseWeatherUrl(hHttpPort_t hHttpResponse)
 
 		//Parsing weather icon value.
 		jElement = cJSON_GetObjectItemCaseSensitive(jWeatherArray->child, "icon");
-
+//
 		parsedIconValue(WeatherParam.weatherIcon ,jElement->valuestring);
 
 		xQueueSendToBack(apiWeather_queue, (void *)&WeatherParam, portMAX_DELAY);
