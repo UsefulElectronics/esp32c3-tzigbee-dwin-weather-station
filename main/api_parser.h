@@ -44,7 +44,7 @@ typedef struct
 	uint8_t tempreture	[2];
 	uint8_t humidity	[2];
 	uint8_t weatherIcon	[2];
-}apiWeather_t;
+}apiManager_h;
 /* VARIABLES -----------------------------------------------------------------*/
 extern QueueHandle_t apiWeather_queue;
 extern int prevTime;

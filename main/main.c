@@ -52,6 +52,17 @@ static void time_handle_task(void *pvParameters)
 
 	while(1)
 	{
+
+		if(SYS_TICK() - hHttpResponse.availableTimeout >= 10000 && hHttpResponse.available == false)
+		{
+			xSemaphoreGive(httpSem);
+//			xSemaphoreGiveRecursive(httpSem);
+
+			hHttpResponse.available = true;
+
+			hHttpResponse.availableTimeout = SYS_TICK();
+		}
+
 		if(timeStamp <= prevTime )
 		{
 			timeStamp = prevTime;
@@ -83,10 +94,7 @@ static void time_handle_task(void *pvParameters)
 			diplayBuffer.uart_txPacketSize = dwinMakePacket((char*)diplayBuffer.uart_txBuffer, DWIN_TIME);
 
 			 xQueueSendToBack(uartTx_queue, &diplayBuffer, portMAX_DELAY);
-
 		}
-
-
 
 		vTaskDelay(1000 / portTICK_PERIOD_MS);
 	}
@@ -97,7 +105,7 @@ static void time_handle_task(void *pvParameters)
  */
 static void peripheral_handler_task(void *pvParameters)
 {
-	apiWeather_t WeatherParam;
+	apiManager_h WeatherParam;
 
 
 	uartHandler_t diplayBuffer;
@@ -159,6 +167,8 @@ static void peripheral_handler_task(void *pvParameters)
 bool idle_task_callback(void)
 {
 
+
+
 	return 0;
 }
 
@@ -190,10 +200,10 @@ void app_main(void)
     xTaskCreate(&http_get_bitcoin_task, "http_get_task",1* 4096, NULL, 1, NULL);
 
     xTaskCreate(&http_get_ethereum_task, "http_get_task",1* 4096, NULL, 1, NULL);
-//
+
     xTaskCreate(&http_get_prayer_task, "http_get_task",1* 4096, NULL, 1, NULL);
 
-    xTaskCreate(&http_json_parser, "json_parser_task",2 * 4096, NULL, 1, NULL);
+    xTaskCreate(&http_json_parser, "json_parser_task",3 * 4096, NULL, 1, NULL);
 
     xTaskCreate(&peripheral_handler_task, "system_Handler_task",1 * 4096, NULL, 1, NULL);
 

@@ -20,6 +20,8 @@
 #include "freertos/task.h"
 #include "freertos/queue.h"
 #include "freertos/event_groups.h"
+#include "freertos/semphr.h"
+
 
 #include "esp_wifi.h"
 #include "esp_event.h"
@@ -43,6 +45,8 @@
 #define WIFI_CONNECTED_BIT 				BIT0
 #define WIFI_FAIL_BIT      				BIT1
 #define EXAMPLE_ESP_MAXIMUM_RETRY  		10
+
+#define SYS_TICK()				xTaskGetTickCount() * portTICK_PERIOD_MS
 /* ENUMORATIONS --------------------------------------------------------------*/
 typedef enum
 {
@@ -57,10 +61,13 @@ typedef struct
 	uint8_t packetSize;
 	urlId_e urlId;
 	bool	available;
+	uint32_t	availableTimeout;
 	char packetBuffer[HTTP_RESPONSE_LENGTH_MAX];
 }hHttpPort_t;
 /* VARIABLES -----------------------------------------------------------------*/
-extern QueueHandle_t httpRx_queue;
+extern QueueHandle_t 		httpRx_queue;
+extern SemaphoreHandle_t 	httpSem;
+extern hHttpPort_t 			hHttpResponse;
 /* FUNCTIONS DECLARATION -----------------------------------------------------*/
 void http_get_weather_task	(void *pvParameters);
 

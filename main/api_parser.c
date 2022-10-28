@@ -86,6 +86,9 @@ static void parsedIconValue				(uint8_t* weatherIconValue ,char* weatherIconStir
 static void parsedHumidityUpdate		(uint8_t* weatherHum, int humidity);
 
 static void parseWeatherUrl				(hHttpPort_t hHttpResponse);
+static void parseBtcUrl					(hHttpPort_t hHttpResponse);
+static void parseEthUrl					(hHttpPort_t hHttpResponse);
+static void parsePrayerUrl				(hHttpPort_t hHttpResponse);
 /* FUNCTIONS DECLARATION -----------------------------------------------------*/
 /**
  * @brief
@@ -94,35 +97,46 @@ static void parseWeatherUrl				(hHttpPort_t hHttpResponse);
  */
 void http_json_parser(void *pvParameters)
 {
-	hHttpPort_t hHttpResponse;
+	hHttpPort_t hHttpResp;
 
-	apiWeather_queue = xQueueCreate(5, sizeof(apiWeather_t));
+	apiWeather_queue = xQueueCreate(5, sizeof(apiManager_h));
 
 	while(1)
 	{
-		if(xQueueReceive(httpRx_queue, (void * )&hHttpResponse, (portTickType)portMAX_DELAY))
+		if(xQueueReceive(httpRx_queue, (void * )&hHttpResp, (portTickType)portMAX_DELAY))
 		{
+//			hHttpResponse.available = true;
 //			ESP_LOGI(TAG, "Packet size=%d JSON: %s.", hHttpResponse.packetSize, hHttpResponse.packetBuffer);
-	    	switch (hHttpResponse.urlId)
+	    	switch (hHttpResp.urlId)
 	    	{
+
+
 				case URL_WEATHER:
 
-					parseWeatherUrl(hHttpResponse);
+					parseWeatherUrl(hHttpResp);
 
 					break;
 				case URL_BTC:
 
+					parseBtcUrl(hHttpResp);
+
 					break;
 				case URL_ETH:
 
+					parseEthUrl(hHttpResp);
+
 					break;
 				case URL_PRAYER:
+
+					parsePrayerUrl(hHttpResp);
 
 					break;
 
 				default:
 					break;
 			}
+
+
 		}
 	}
 }
@@ -209,16 +223,16 @@ static void parsedIconValue(uint8_t* weatherIconValue ,char* weatherIconStirng)
 	}
 }
 /**
- * @brief
+ * @brief	This functions obtains the important parameters from JSON file and places them in the corresponding API to be handled later on
  *
- * @param hHttpResponse
+ * @param 	hHttpResponse	:	HTTP Response hander
  */
 static void parseWeatherUrl(hHttpPort_t hHttpResponse)
 {
 
 	struct tm dateTime;
 
-	apiWeather_t WeatherParam;
+	apiManager_h WeatherParam;
 
     cJSON *jElement 		= NULL;
 
@@ -260,9 +274,7 @@ static void parseWeatherUrl(hHttpPort_t hHttpResponse)
 
 	    parsedHumidityUpdate(WeatherParam.humidity, jElement->child->valueint);
 
-	    ESP_LOGI(TAG, "humidity: %d.", jElement->child->valueint);
-
-	    //Parsing weather description value.
+	   	//Parsing weather description value.
 	    jWeatherArray = cJSON_GetObjectItemCaseSensitive(ResponseJson, "weather");
 
 	    jElement = cJSON_GetObjectItemCaseSensitive(jWeatherArray->child, "description");
@@ -278,20 +290,75 @@ static void parseWeatherUrl(hHttpPort_t hHttpResponse)
     }
 
 }
-/**
- * @brief
- *
- * @param hHttpResponse
- */
+
 static void parseBtcUrl(hHttpPort_t hHttpResponse)
 {
-    cJSON *jElement 		= NULL;
+	apiManager_h btcParam;
+
+	cJSON *jElement 		= NULL;
 
     cJSON *ResponseJson 	= cJSON_Parse(hHttpResponse.packetBuffer);
     if(ResponseJson != NULL)
     {
+    	jElement = cJSON_GetObjectItemCaseSensitive(ResponseJson, "bitcoin");
+
+    	if(jElement != NULL)
+    	{
+        	jElement->child = cJSON_GetObjectItemCaseSensitive(jElement, "usd");
+
+        	ESP_LOGI(TAG, "BTC price: %d.", jElement->child->valueint);
+    	}
 
     }
 }
+
+static void parseEthUrl(hHttpPort_t hHttpResponse)
+{
+	apiManager_h ethParam;
+
+	cJSON *jElement 		= NULL;
+
+    cJSON *ResponseJson 	= cJSON_Parse(hHttpResponse.packetBuffer);
+    if(ResponseJson != NULL)
+    {
+//    	ESP_LOGI(TAG, "ETH string: %s.", hHttpResponse.packetBuffer);
+
+    	jElement = cJSON_GetObjectItemCaseSensitive(ResponseJson, "ethereum");
+
+    	if(jElement != NULL)
+    	{
+        	jElement->child = cJSON_GetObjectItemCaseSensitive(jElement, "usd");
+
+        	ESP_LOGI(TAG, "ETH price: %f.", jElement->child->valuedouble);
+    	}
+
+    }
+}
+
+
+static void parsePrayerUrl(hHttpPort_t hHttpResponse)
+{
+	apiManager_h prayerParam;
+
+	cJSON *jElement 		= NULL;
+
+    cJSON *ResponseJson 	= cJSON_Parse(hHttpResponse.packetBuffer);
+    if(ResponseJson != NULL)
+    {
+//    	ESP_LOGI(TAG, "ETH string: %s.", hHttpResponse.packetBuffer);
+
+    	jElement = cJSON_GetObjectItemCaseSensitive(ResponseJson, "today");
+
+    	if(jElement != NULL)
+    	{
+        	jElement->child = cJSON_GetObjectItemCaseSensitive(jElement, "Fajr");
+
+        	ESP_LOGI(TAG, "prayer time: %s.", jElement->child->valuestring);
+    	}
+
+    }
+}
+
+
 
 /**************************  Useful Electronics  ****************END OF FILE***/
