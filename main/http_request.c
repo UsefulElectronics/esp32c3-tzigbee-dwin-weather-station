@@ -130,6 +130,8 @@ void http_get_prayer_task(void *pvParameters)
 
 static void http_event_handler(esp_http_client_event_t *evt)
 {
+	static bool memLeakFlag;
+
 	switch (evt->event_id)
 	{
 		case HTTP_EVENT_ON_DATA:
@@ -137,6 +139,9 @@ static void http_event_handler(esp_http_client_event_t *evt)
 		    memcpy(hHttpResponse.packetBuffer + hHttpResponse.packetSize, evt->data, evt->data_len);
 		    //Response cursor move forward
 		    hHttpResponse.packetSize += evt->data_len;
+
+		    memLeakFlag = true;
+
 
 			break;
         case HTTP_EVENT_ON_CONNECTED:
@@ -147,18 +152,27 @@ static void http_event_handler(esp_http_client_event_t *evt)
 
         case HTTP_EVENT_DISCONNECTED:
 
-            ESP_LOGI(TAG, "HTTP_EVENT_DISCONNECTED");
+        	if(memLeakFlag)
+        	{
+                ESP_LOGI(TAG, "HTTP_EVENT_DISCONNECTED");
 
-            hHttpResponse.packetSize = strlen(hHttpResponse.packetBuffer);
+                hHttpResponse.packetSize = strlen(hHttpResponse.packetBuffer);
 
-            xQueueSendToBack(httpRx_queue, &hHttpResponse, portMAX_DELAY);
+                xQueueSendToBack(httpRx_queue, &hHttpResponse, portMAX_DELAY);
 
-            memset(&hHttpResponse, 0, sizeof(hHttpPort_t));
+                memset(&hHttpResponse, 0, sizeof(hHttpPort_t));
 
 
-            memcpy(&hHttpResponse.urlId ,evt->user_data, 1);
+                memcpy(&hHttpResponse.urlId ,evt->user_data, 1);
 
-            ESP_LOGI(TAG, "URL ID: %d", hHttpResponse.urlId);
+                ESP_LOGI(TAG, "URL ID: %d", hHttpResponse.urlId);
+
+        	}
+        	else
+        	{
+        		esp_restart();
+        	}
+
 
 
 //            hHttpResponse.urlId = (urlId_e)*(evt->user_data);
@@ -170,47 +184,6 @@ static void http_event_handler(esp_http_client_event_t *evt)
 	}
 }
 
-static void http_btc_handler(esp_http_client_event_t *evt)
-{
-	switch (evt->event_id)
-	{
-		case HTTP_EVENT_ON_DATA:
-			//Accumulate Json string in the response buffer
-		    memcpy(hHttpResponse.packetBuffer + hHttpResponse.packetSize, evt->data, evt->data_len);
-		    //Response cursor move forward
-		    hHttpResponse.packetSize += evt->data_len;
-
-			break;
-        case HTTP_EVENT_ON_CONNECTED:
-
-            ESP_LOGD(TAG, "HTTP_EVENT_ON_CONNECTED");
-
-            break;
-
-        case HTTP_EVENT_DISCONNECTED:
-
-            ESP_LOGI(TAG, "HTTP_EVENT_DISCONNECTED");
-
-            hHttpResponse.packetSize = strlen(hHttpResponse.packetBuffer);
-
-            xQueueSendToBack(httpRx_queue, &hHttpResponse, portMAX_DELAY);
-
-            memset(&hHttpResponse, 0, sizeof(hHttpPort_t));
-
-
-            memcpy(&hHttpResponse.urlId ,evt->user_data, 1);
-
-            ESP_LOGI(TAG, "URL ID: %d", hHttpResponse.urlId);
-
-
-//            hHttpResponse.urlId = (urlId_e)*(evt->user_data);
-
-            break;
-
-		default:
-			break;
-	}
-}
 
 void httpClientInit(char* urlString, urlId_e urlId)
 {
